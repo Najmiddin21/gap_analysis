@@ -1,8 +1,15 @@
 {
+  "name": "gap_analysis",
+  "version": "1.0.0",
+  "description": "Aksiya bozoridagi gap analiz dasturi",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "type": "module",
     "yahoo-finance2": "^2.13.3"
   }
 }
