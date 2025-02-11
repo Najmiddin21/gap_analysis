@@ -4,16 +4,13 @@ import yahooFinance from "yahoo-finance2";
 import path from "path";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // ✅ Render uchun to‘g‘ri port sozlamasi
 
-// CORS muammosini hal qilish
 app.use(cors());
 
-// Static fayllar uchun public papkani ishlatish
 const __dirname = path.resolve();
 app.use(express.static(path.join(__dirname, "public")));
 
-// API endpoint: Gap Analysis
 app.get("/gap-analysis", async (req, res) => {
     const { ticker } = req.query;
     if (!ticker) {
@@ -23,7 +20,10 @@ app.get("/gap-analysis", async (req, res) => {
     try {
         const twoYearsAgo = new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000);
         const queryOptions = { period1: twoYearsAgo };
+        console.log(`🔍 ${ticker} uchun tarixiy ma'lumotlarni olish...`);
+
         let historicalData = await yahooFinance.historical(ticker, queryOptions);
+        console.log(historicalData); // ✅ API ma’lumotlarini tekshirish uchun
 
         if (!historicalData || historicalData.length < 2) {
             return res.json({ message: "Yetarli ma'lumot topilmadi." });
@@ -71,16 +71,15 @@ app.get("/gap-analysis", async (req, res) => {
         res.json([...gapUpResults, ...gapDownResults]);
 
     } catch (error) {
-        console.error(error);
+        console.error("❌ Yahoo Finance API xatosi:", error);
         res.status(500).json({ message: "Xatolik yuz berdi!" });
     }
 });
 
-// Bosh sahifa uchun index.html faylni xizmat ko‘rsatish
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.listen(PORT, () => {
-    console.log(`Server http://localhost:${PORT} da ishlayapti`);
+    console.log(`✅ Server http://localhost:${PORT} da ishlayapti`);
 });

@@ -1,22 +1,43 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const tickerInput = document.getElementById("ticker");
+    const resultBox = document.getElementById("result");
+
+    // Enter bosganda qidirish
+    tickerInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            getGapAnalysis();
+        }
+    });
+});
+
 async function getGapAnalysis() {
-    const ticker = document.getElementById("ticker").value.trim();
+    const tickerInput = document.getElementById("ticker");
+    let ticker = tickerInput.value.trim().toUpperCase(); // Katta harfga o'tkazish
+    const resultBox = document.getElementById("result");
+
     if (!ticker) {
-        alert("Iltimos, ticker kiriting!");
+        alert("Please enter ticker");
         return;
     }
 
-    document.getElementById("result").textContent = "Yuklanmoqda...";
+    resultBox.textContent = "Loading...";
+    tickerInput.value = ""; // Inputni tozalash
 
     try {
         const response = await fetch(`/gap-analysis?ticker=${ticker}`);
+        
+        if (!response.ok) {
+            throw new Error(`Server xatosi: ${response.status}`);
+        }
+
         const data = await response.json();
 
         if (data.message) {
-            document.getElementById("result").textContent = data.message;
+            resultBox.textContent = data.message;
             return;
         }
 
-        let resultText = `Введите тикер акции: ${ticker}\n\n`;
+        let resultText = `It's your stock: ${ticker}\n\n`;
         resultText += "Gap           Total Days    Closed Down    Closed Up\n";
         resultText += "----------------------------------------------------\n";
 
@@ -33,13 +54,12 @@ async function getGapAnalysis() {
         });
 
         resultText += gapUpSection;
-        resultText += "----------------------------------------------------\n"; // "Gap Up" va "Gap Down" o'rtasidagi chiziq
+        resultText += "----------------------------------------------------\n";
         resultText += gapDownSection;
 
-        document.getElementById("result").textContent = resultText;
+        resultBox.textContent = resultText;
     } catch (error) {
-        console.error(error);
-        document.getElementById("result").textContent = "Xatolik yuz berdi!";
+        console.error("Xatolik:", error);
+        resultBox.textContent = "Serverda xatolik yuz berdi! Keyinroq urinib ko‘ring.";
     }
 }
-window.getGapAnalysis = getGapAnalysis;
