@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
     const tickerInput = document.getElementById("ticker");
-    const resultBox = document.getElementById("result");
 
     // Enter bosganda qidirish
     tickerInput.addEventListener("keydown", (event) => {
@@ -45,7 +44,7 @@ async function getGapAnalysis() {
         let gapDownSection = "";
 
         data.forEach(row => {
-            let line = `${row.Gap.padEnd(18)} ${String(row["Total Days"]).padEnd(12)} ${String(row["Closed Down"]).padEnd(12)} ${String(row["Closed Up"]).padEnd(12)}\n`;
+            let line = `${row.Gap.padEnd(15, ' ')} ${String(row["Total Days"]).padEnd(10, ' ')} ${String(row["Closed Down"]).padEnd(10, ' ')} ${String(row["Closed Up"]).padEnd(10, ' ')}\n`;
             if (row.Gap.includes("up")) {
                 gapUpSection += line;
             } else {
