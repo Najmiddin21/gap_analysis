@@ -4,7 +4,7 @@ import yahooFinance from "yahoo-finance2";
 import path from "path";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // ✅ Render uchun to‘g‘ri port sozlamasi
 
 app.use(cors());
 
@@ -18,29 +18,18 @@ app.get("/gap-analysis", async (req, res) => {
     }
 
     try {
-        const twoYearsAgo = new Date();
-        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
-
+        const twoYearsAgo = new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000);
+        const queryOptions = { period1: twoYearsAgo };
         console.log(`🔍 ${ticker} uchun tarixiy ma'lumotlarni olish...`);
 
-        // historical() o‘rniga chart() ishlatamiz
-        let historicalData = await yahooFinance.chart(ticker, { period1: twoYearsAgo });
+        let historicalData = await yahooFinance.historical(ticker, queryOptions);
+        console.log(historicalData); // ✅ API ma’lumotlarini tekshirish uchun
 
-        if (`!historicalData  !historicalData.meta  !historicalData.timestamp`) {
+        if (!historicalData || historicalData.length < 2) {
             return res.json({ message: "Yetarli ma'lumot topilmadi." });
         }
 
-        const prices = historicalData.timestamp.map((time, index) => ({
-            date: new Date(time * 1000), // UNIX timestampni odatiy vaqtga o‘tkazamiz
-            open: historicalData.indicators.quote[0].open[index],
-            close: historicalData.indicators.quote[0].close[index]
-        })).filter(data => data.open !== null && data.close !== null); // null qiymatlarni olib tashlaymiz
-
-        if (prices.length < 2) {
-            return res.json({ message: "Yetarli ma'lumot topilmadi." });
-        }
-
-        prices.sort((a, b) => a.date - b.date);
+        historicalData.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         let gapUpResults = [];
         let gapDownResults = [];
@@ -50,9 +39,9 @@ app.get("/gap-analysis", async (req, res) => {
             let gapUpCount = 0, gapUpClosedUp = 0, gapUpClosedDown = 0;
             let gapDownCount = 0, gapDownClosedUp = 0, gapDownClosedDown = 0;
 
-            for (let i = 1; i < prices.length; i++) {
-                const prev = prices[i - 1];
-                const curr = prices[i];
+            for (let i = 1; i < historicalData.length; i++) {
+                const prev = historicalData[i - 1];
+                const curr = historicalData[i];
                 const gap = ((curr.open - prev.close) / prev.close) * 100;
 
                 if (gap >= threshold) {
@@ -83,12 +72,6 @@ app.get("/gap-analysis", async (req, res) => {
 
     } catch (error) {
         console.error("❌ Yahoo Finance API xatosi:", error);
-
-        // Agar "Too Many Requests" (429) bo‘lsa, uni to‘g‘ri ko‘rsatamiz
-        if (error.message.includes("Too Many Requests")) {
-            return res.status(429).json({ message: "API so‘rovlar limiti oshib ketdi. Keyinroq urinib ko‘ring." });
-        }
-
         res.status(500).json({ message: "Xatolik yuz berdi!" });
     }
 });
