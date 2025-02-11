@@ -4,7 +4,7 @@ import yahooFinance from "yahoo-finance2";
 import path from "path";
 
 const app = express();
-const PORT = process.env.PORT || 3000; // ✅ Render uchun to‘g‘ri port sozlamasi
+const PORT = process.env.PORT || 3000; // ✅ To‘g‘ri port sozlamasi
 
 app.use(cors());
 
@@ -23,7 +23,7 @@ app.get("/gap-analysis", async (req, res) => {
         console.log(`🔍 ${ticker} uchun tarixiy ma'lumotlarni olish...`);
 
         let historicalData = await yahooFinance.historical(ticker, queryOptions);
-        console.log(historicalData); // ✅ API ma’lumotlarini tekshirish uchun
+        console.log(historicalData);
 
         if (!historicalData || historicalData.length < 2) {
             return res.json({ message: "Yetarli ma'lumot topilmadi." });
@@ -74,10 +74,6 @@ app.get("/gap-analysis", async (req, res) => {
         console.error("❌ Yahoo Finance API xatosi:", error);
         res.status(500).json({ message: "Xatolik yuz berdi!" });
     }
-});
-
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.listen(PORT, () => {

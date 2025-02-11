@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function getGapAnalysis() {
     const tickerInput = document.getElementById("ticker");
-    let ticker = tickerInput.value.trim().toUpperCase(); // Katta harfga o'tkazish
+    let ticker = tickerInput.value.trim().toUpperCase();
     const resultBox = document.getElementById("result");
 
     if (!ticker) {
