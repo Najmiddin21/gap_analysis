@@ -657,6 +657,15 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
+
+// Gap sahifani faqat sessiyasi bor user ko‘ra oladi
+app.get("/gap.html", (req, res) => {
+  if (req.session.authenticated) {
+    return res.sendFile(path.join(__dirname, "public", "gap.html"));
+  }
+  return res.redirect("/"); // login sahifaga qaytaradi
+});
+
 app.use(express.static(path.join(__dirname, "public")));
 
 // Helper functions
@@ -667,6 +676,19 @@ function generateCode() {
 async function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+
+// function isAuthenticated(req, res, next) {
+//   if (req.session.authenticated) {
+//     return next();
+//   }
+//   res.redirect("/login");
+// }
+
+// app.get("/login", (req, res) => {
+//   res.sendFile(path.join(__dirname, "public", "index.html"));
+// });
+
 
 // Email setup
 const transporter = nodemailer.createTransport({
@@ -730,12 +752,10 @@ app.post("/verify", async (req, res) => {
 });
 
 // 3. Serve gap.html only if authenticated
-app.get("/gap.html", (req, res) => {
-  if (req.session.authenticated) {
-    return res.sendFile(path.join(__dirname, "public", "gap.html"));
-  }
-  res.redirect("/");
-});
+// app.get("/gap.html", isAuthenticated, (req, res) => {
+//   res.sendFile(path.join(__dirname, "public", "gap.html"));
+// });
+
 
 // 4. Gap analysis
 app.get("/gap-analysis", async (req, res) => {
