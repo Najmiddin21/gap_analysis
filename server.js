@@ -710,25 +710,31 @@ app.use(session({
   saveUninitialized: true
 }));
 
-// Gap sahifani faqat sessiyasi bor user ko‘ra oladi
+// CSS, JS va rasm fayllarini ochiq berish
+app.use("/css", express.static(path.join(__dirname, "public", "css")));
+app.use("/js", express.static(path.join(__dirname, "public", "js")));
+app.use("/img", express.static(path.join(__dirname, "public", "img")));
+
+// Login sahifasi (barchaga ochiq)
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Gap sahifasi (faqat sessiyasi bor)
 app.get("/gap.html", (req, res) => {
   if (req.session.authenticated) {
     return res.sendFile(path.join(__dirname, "public", "gap.html"));
   }
-  return res.redirect("/"); // login sahifaga qaytaradi
+  return res.redirect("/");
 });
 
-// History sahifasi
+// History sahifasi (faqat sessiyasi bor)
 app.get("/history.html", (req, res) => {
   if (req.session.authenticated) {
     return res.sendFile(path.join(__dirname, "public", "history.html"));
   }
   return res.redirect("/");
 });
-
-
-app.use(express.static(path.join(__dirname, "public")));
-
 // Helper functions
 function generateCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
