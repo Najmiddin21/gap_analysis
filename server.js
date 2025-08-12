@@ -985,13 +985,17 @@ app.use(
   })
 );
 
-// Static files mapping
+// Faqat public ichidagi css, js, img ochiq bo‘ladi
 app.use("/css", express.static(path.join(__dirname, "public", "css")));
 app.use("/js", express.static(path.join(__dirname, "public", "js")));
-app.use("/img", express.static(path.join(__dirname, "public", "assets", "img")));
-app.use(express.static(path.join(__dirname, "public"))); // umumiy
+app.use("/img", express.static(path.join(__dirname, "public", "img")));
 
-// ======== Auth protected routes ========
+// Login sahifasi (barchaga ochiq)
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Gap sahifasi (faqat sessiyasi bor)
 app.get("/gap.html", (req, res) => {
   if (req.session.authenticated) {
     return res.sendFile(path.join(__dirname, "public", "gap.html"));
@@ -999,6 +1003,7 @@ app.get("/gap.html", (req, res) => {
   return res.redirect("/");
 });
 
+// History sahifasi (faqat sessiyasi bor)
 app.get("/history.html", (req, res) => {
   if (req.session.authenticated) {
     return res.sendFile(path.join(__dirname, "public", "history.html"));
