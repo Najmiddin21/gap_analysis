@@ -986,9 +986,9 @@ app.use(
 );
 
 // Faqat public ichidagi css, js, img ochiq bo‘ladi
-app.use("/css", express.static(path.join(__dirname, "public", "css")));
-app.use("/js", express.static(path.join(__dirname, "public", "js")));
-app.use("/img", express.static(path.join(__dirname, "public", "img")));
+// app.use("/css", express.static(path.join(__dirname, "public", "css")));
+// app.use("/js", express.static(path.join(__dirname, "public", "js")));
+// app.use("/img", express.static(path.join(__dirname, "public", "img")));
 
 // Login sahifasi (barchaga ochiq)
 app.get("/", (req, res) => {
