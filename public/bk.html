@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Backtest</title>
+  <style>
+    body {
+      font-family: monospace;
+      background-color: black;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+      text-align: center;
+    }
+    p {
+      margin: 0;
+      font-size: 14px;
+    }
+    h2 {
+      font-size: 22px;
+      margin: 5px 0 10px 0;
+    }
+    .terminal-box {
+      border: 2px solid white;
+      padding: 3px 10px;
+      width: 420px;
+      min-width: 300px;
+      text-align: left;
+      margin-top: 1rem;
+      font-size: 14.5px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div id="page-content">
+    <h2> 🏠 Back-test</h2>
+    <p>Ticker of stocks</p>
+    <input type="text" id="ticker" placeholder="For Example"/>
+    <button id="btn">OK</button>
+
+    <div class="terminal-box">
+      <pre id="result"></pre>
+    </div>
+
+    <script src="stock.js" defer></script>
+  </div>
+</body>
+</html>

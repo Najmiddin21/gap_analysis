@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MNX</title>
+    <title>Back-office</title>
     <style>
         body {
             font-family: monospace;
-            background-color: black;
+            background-color: rgb(2, 14, 26);
             color: white;
             display: flex;
             flex-direction: column;
@@ -18,29 +18,93 @@
             margin: 10px 0;
             padding: 8px;
         }
-        .terminal-box {
+        /* .terminal-box {
             border: 2px solid rgb(246, 245, 245);
             padding: 10px;
             width: 405px;
             min-width: 300px;
             text-align: left;
-        }
-        pre {
+        } */
+        /* pre {
             white-space: pre;
             font-size: 14px;
             margin: 0;
-        }
+        } */
+           /* background-color: rgb(2, 14, 26); */
+           #output {
+      width: 100px;
+      text-align: center;
+      background: #000;
+      padding: 5px 0px;
+      border: 1px solid rgb(250, 250, 250);
+      white-space: pre;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+      .navbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .navbar button {
+    background-color: black;      /* qora fon */
+    color: white;                 /* oq yozuv (shu jumladan emoji iconlar) */
+    border: 2px solid white;      /* oq border */
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .navbar button:hover {
+    background-color: white;      /* hoverda oq fon */
+    color: black;                 /* qora matn */
+    border: 2px solid black;      /* qora border */
+  }
+
+ #main-content {
+text-align: center;
+ 
+}
+
+.show {
+  width: 100%;
+  height:470px;      
+  overflow: hidden;  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.show img {
+  width: 1000px;
+  height: 600px;
+  object-fit: fill;  /* yoki cover / scale-down */
+}
+ 
     </style>
 </head>
 <body>
-    <h2>Back-test</h2>
-    <label for="ticker">Ticker of stocks</label>
-    <input type="text" id="ticker" placeholder="For Example">
-    <button onclick="getGapAnalysis()">OK</button>
-    
-    <div class="terminal-box">
-        <pre id="result"></pre>
-    </div>
+
+  <div class="navbar">
+  <button onclick="loadPage('st')"> 📈 Your Stocks</button>
+  <button onclick="loadPage('bk')">🏠 Backtest</button>
+<button onclick="loadPage('calc', () => { setupCalcPage(); })">
+  🧮 Risk Manager
+</button>
+</div>
+  <div id="main-content">
+<h1>Welcome to Back-office</h1>
+<div class="show">
+  <img src="./asswts/stoneward.PNG" alt="">
+</div>
+  </div>
+
+
 
     <script src="stock.js" defer></script>
 </body>

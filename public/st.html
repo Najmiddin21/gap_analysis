@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        body{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: black;
+        }
+        h2{
+     
+            font-size: 22px;
+        }
+          #output {
+      width: 80px;
+      text-align: center;
+      background: #000000;
+      /* margin-left: 39px; */
+      overflow: auto ;
+      padding: 5px 5px;
+      /* border: 2px solid rgb(8, 0, 0); */
+      font-weight: bolder;
+      border: 2px solid white;
+    }
+    
+    </style>
+</head>
+<body>
+      <h2>📈 Your Stocks</h2>
+  <pre id="output">Loading...</pre>
+
+  <script src="stock.js"></script>
+</body>
+</html>
+
+<!-- <body>
+  <h1>📅 Saqlangan Tekshiruvlar</h1>
+  <ul id="historyList"></ul>
+
+  <script>
+    const list = document.getElementById("historyList");
+    Object.keys(localStorage)
+      .filter(key => key.startsWith("checkedStocks_"))
+      .sort()
+      .forEach(key => {
+        const date = key.replace("checkedStocks_", "");
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${date}</strong> — 
+          <button onclick="viewData('${key}')">Ko‘rish</button>`;
+        list.appendChild(li);
+      });
+
+    function viewData(key) {
+      const data = JSON.parse(localStorage.getItem(key));
+      alert(JSON.stringify(data, null, 2)); // yoki yangi sahifaga render qilamiz
+    }
+  </script>
+</body> -->

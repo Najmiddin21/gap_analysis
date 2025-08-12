@@ -1,0 +1,597 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>History</title>
+  <style>
+    body{
+        background-color: black;
+        color: #ffffff;
+    }
+    section {
+      margin-bottom: 30px;
+      border: 1px solid #ffffff;
+      padding: 10px;
+
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    td, th {
+      border: 1px solid #ffffff;
+      padding: 4px 8px;
+      text-align: left;
+      color: #ffffff;
+    }
+    h3 {
+      margin-top: 0;
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Saqlangan Tarix</h1>
+  <div id="historyContainer"></div>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const container = document.getElementById("historyContainer");
+      const data = JSON.parse(localStorage.getItem("history") || "{}");
+
+      if (Object.keys(data).length === 0) {
+        container.innerHTML = "<p>Hozircha hech qanday saqlangan tarix yo‘q.</p>";
+        return;
+      }
+
+      for (const date in data) {
+        const section = document.createElement("section");
+        section.innerHTML = `<h3>${date}</h3><table border="1"></table>`;
+        const table = section.querySelector("table");
+
+        data[date].rows.forEach(row => {
+          const tr = document.createElement("tr");
+          row.forEach(val => {
+            const td = document.createElement("td");
+            td.textContent = val;
+            tr.appendChild(td);
+          });
+          table.appendChild(tr);
+        });
+
+        container.appendChild(section);
+      }
+    });
+  </script>
+</body>
+</html> -->
+ 
+
+<!-- 
+  <!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>📅 Tarix (History)</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: sans-serif;
+    }
+
+  
+
+    #filterSection {
+      text-align: center;
+      margin: 20px;
+    }
+
+    section {
+      border: 1px solid #ffffff50;
+      margin: 20px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 0;
+     color: crimson;
+    }
+
+    .stats {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #ffffff50;
+      padding: 6px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #222;
+      color: #00ffcc;
+    }
+
+    td {
+      color: white;
+    }
+
+    button, input[type="date"] {
+      background-color: black;
+      color: white;
+      border: 2px solid white;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin: 10px;
+    }
+
+    button:hover, input[type="date"]:hover {
+      background-color: white;
+      color: black;
+      border: 2px solid black;
+    }
+    #monthly-report{
+      width: 500px;
+      padding: 10px;
+      border: 2px solid white;
+    }
+     #monthly-report h2{
+      color: white;
+     }
+    .main{
+      display: block;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<a href="./gap.html"><button>🔙 Back</button></a>
+  <h1>Your History</h1>
+  
+  <div class="main">
+    <div id="monthly-report">
+   
+   </div>
+
+
+  <div id="daily-report">
+      <h2>📅 Daily report</h2>
+    <input type="date" id="date-picker">
+    <button id="show-btn">📥 Show</button>
+    <div id="daily-stats"></div>
+    <div id="daily-table"></div>
+  </div>
+  </div>
+
+ <script>
+  const columnNames = [
+    "Ticker", "Trigger", "Closed P", "size", "50%", "Stop price", "Stop risk", "Target-1 price", "Target-1 USD", 
+    "Target-0,5 price", "Target-0,5 USD", "Avg profit", "Fact", "Win%", "Loss$", "Win%", "Loss%"
+  ];
+
+  function calculateMonthlyReport() {
+    const history = JSON.parse(localStorage.getItem("history") || "{}");
+
+    let winTotal = 0;
+    let lossTotal = 0;
+    let winCount = 0;
+    let lossCount = 0;
+
+    Object.keys(history).forEach(date => {
+      const rows = history[date].rows || [];
+      rows.forEach(row => {
+        const fact = parseFloat(row[12]); // P/L qiymati
+        if (fact > 0) {
+          winTotal += fact;
+          winCount++;
+        } else if (fact < 0) {
+          lossTotal += Math.abs(fact);
+          lossCount++;
+        }
+      });
+    });
+
+    const totalTrades = winCount + lossCount;
+    const winPct = totalTrades ? ((winCount / totalTrades) * 100).toFixed(2) : 0;
+    const lossPct = (100 - winPct).toFixed(2);
+    const avgWin = winCount ? (winTotal / winCount).toFixed(2) : 0;
+    const avgLoss = lossCount ? (lossTotal / lossCount).toFixed(2) : 0;
+    const pl = (winTotal - lossTotal).toFixed(2);
+
+    document.getElementById("monthly-report").innerHTML = `
+      <h2>📅 Monthly report</h2>
+      <table border="1" cellpadding="6">
+        <tr>
+          <th>P/L</th>
+          <th>Win $</th>
+          <th>Loss $</th>
+          <th>Win %</th>
+          <th>Loss %</th>
+          <th>Avg Win</th>
+          <th>Avg Loss</th>
+        </tr>
+        <tr>
+          <td>${pl}$</td>
+          <td>${winTotal.toFixed(2)}</td>
+          <td>-${lossTotal.toFixed(2)}</td>
+          <td>${winPct}%</td>
+          <td>${lossPct}%</td>
+          <td>${avgWin}$</td>
+          <td>-${avgLoss}$</td>
+        </tr>
+      </table>
+    `;
+  }
+
+ function showSelected() {
+  const selectedDate = document.getElementById("date-picker").value;
+  const history = JSON.parse(localStorage.getItem("history") || "{}");
+
+  const container = document.getElementById("daily-table");
+  const statsBox = document.getElementById("daily-stats");
+  container.innerHTML = "";
+  statsBox.innerHTML = "";
+
+  if (!selectedDate || !history[selectedDate]) {
+    container.innerHTML = "<p style='color:red;'>🔴 Ma'lumot topilmadi.</p>";
+    return;
+  }
+
+  const data = history[selectedDate];
+  const rows = data.rows || [];
+
+  // Jadval
+  const table = document.createElement("table");
+  table.border = "1";
+  table.cellPadding = "6";
+
+  const headerRow = document.createElement("tr");
+  columnNames.forEach(name => {
+    const th = document.createElement("th");
+    th.textContent = name;
+    headerRow.appendChild(th);
+  });
+  table.appendChild(headerRow);
+
+  rows.forEach(row => {
+    const tr = document.createElement("tr");
+    row.forEach(cell => {
+      const td = document.createElement("td");
+      td.textContent = cell;
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+
+  container.appendChild(table);
+
+  // ✅ STATS HISOBLASH
+  let winTotal = 0;
+  let lossTotal = 0;
+  let winCount = 0;
+  let lossCount = 0;
+
+  rows.forEach(row => {
+    const fact = parseFloat(row[12]); // P/L
+    if (!isNaN(fact)) {
+      if (fact > 0) {
+        winTotal += fact;
+        winCount++;
+      } else if (fact < 0) {
+        lossTotal += Math.abs(fact);
+        lossCount++;
+      }
+    }
+  });
+
+  const totalTrades = winCount + lossCount;
+  const winPct = totalTrades ? ((winCount / totalTrades) * 100).toFixed(2) : 0;
+  const lossPct = (100 - winPct).toFixed(2);
+  const avgWin = winCount ? (winTotal / winCount).toFixed(2) : 0;
+  const avgLoss = lossCount ? (lossTotal / lossCount).toFixed(2) : 0;
+  const pl = (winTotal - lossTotal).toFixed(2);
+
+  statsBox.innerHTML = `
+    <h4 style="text-align:center;">📌 Statistics (${selectedDate})</h4>
+    <div style="display:flex; justify-content:center;">
+      <table border="1" cellpadding="6" style="width:auto; max-width:90%; text-align:center;">
+        <tr>
+          <th>P/L</th>
+          <th>Win $</th>
+          <th>Loss $</th>
+          <th>Win %</th>
+          <th>Loss %</th>
+          <th>Avg Win</th>
+          <th>Avg Loss</th>
+        </tr>
+        <tr>
+          <td>${pl}$</td>
+          <td>${winTotal.toFixed(2)}</td>
+          <td>-${lossTotal.toFixed(2)}</td>
+          <td>${winPct}%</td>
+          <td>${lossPct}%</td>
+          <td>${avgWin}$</td>
+          <td>-${avgLoss}$</td>
+        </tr>
+      </table>
+    </div>
+  `;
+}
+
+  // Eventlar
+  window.addEventListener("DOMContentLoaded", calculateMonthlyReport);
+  document.getElementById("show-btn").addEventListener("click", showSelected);
+</script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>📅 Tarix (History)</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: sans-serif;
+    }
+
+  
+
+    #filterSection {
+      text-align: center;
+      margin: 20px;
+    }
+
+    section {
+      border: 1px solid #ffffff50;
+      margin: 20px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 0;
+     color: crimson;
+    }
+
+    .stats {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #ffffff50;
+      padding: 6px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #222;
+      color: #00ffcc;
+    }
+
+    td {
+      color: white;
+    }
+
+    button, input[type="date"] {
+      background-color: black;
+      color: white;
+      border: 2px solid white;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin: 10px;
+    }
+
+    button:hover, input[type="date"]:hover {
+      background-color: white;
+      color: black;
+      border: 2px solid black;
+    }
+    #monthly-report{
+      width: 500px;
+      padding: 10px;
+      border: 2px solid white;
+    }
+     #monthly-report h2{
+      color: white;
+     }
+    .main{
+      display: block;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<a href="./gap.html"><button>🔙 Back</button></a>
+<h1>Your History</h1>
+
+<div class="main">
+  <div id="monthly-report"></div>
+
+  <div id="daily-report">
+    <h2>📅 Daily report</h2>
+    <input type="date" id="date-picker">
+    <button id="show-btn">📥 Show</button>
+    <!-- <button id="clear-btn" style="background:red;">🗑 Clear</button> -->
+    <div id="daily-stats"></div>
+    <div id="daily-table"></div>
+  </div>
+</div>
+
+<script>
+  const columnNames = [
+    "Ticker", "Trigger", "Closed P", "Size", "50%", "Stop Price", "Stop Risk",
+    "Target-1 Price", "Target-1 USD", "Target-0.5 Price", "Target-0.5 USD",
+    "Avg Profit", "Fact", 
+  ];
+
+  function calculateMonthlyReport() {
+    const history = JSON.parse(localStorage.getItem("history") || "{}");
+
+    let winTotal = 0, lossTotal = 0, winCount = 0, lossCount = 0;
+
+    Object.values(history).forEach(day => {
+      (day.rows || []).forEach(row => {
+        const fact = parseFloat(row[12]);
+        if (!isNaN(fact)) {
+          if (fact > 0) { winTotal += fact; winCount++; }
+          else if (fact < 0) { lossTotal += Math.abs(fact); lossCount++; }
+        }
+      });
+    });
+
+    const totalTrades = winCount + lossCount;
+    const winPct = totalTrades ? ((winCount / totalTrades) * 100).toFixed(2) : "0.00";
+    const lossPct = (100 - parseFloat(winPct)).toFixed(2);
+    const avgWin = winCount ? (winTotal / winCount).toFixed(2) : "0.00";
+    const avgLoss = lossCount ? (lossTotal / lossCount).toFixed(2) : "0.00";
+    const pl = (winTotal - lossTotal).toFixed(2);
+
+    document.getElementById("monthly-report").innerHTML = `
+      <h2>📅 Monthly report</h2>
+      <table>
+        <tr>
+          <th>P/L</th><th>Win $</th><th>Loss $</th><th>Win %</th>
+          <th>Loss %</th><th>Avg Win</th><th>Avg Loss</th>
+        </tr>
+        <tr>
+          <td>${pl}$</td>
+          <td>${winTotal.toFixed(2)}</td>
+          <td>-${lossTotal.toFixed(2)}</td>
+          <td>${winPct}%</td>
+          <td>${lossPct}%</td>
+          <td>${avgWin}$</td>
+          <td>-${avgLoss}$</td>
+        </tr>
+      </table>
+    `;
+  }
+
+  function showSelected() {
+    const selectedDate = document.getElementById("date-picker").value;
+    const history = JSON.parse(localStorage.getItem("history") || "{}");
+
+    const container = document.getElementById("daily-table");
+    const statsBox = document.getElementById("daily-stats");
+    container.innerHTML = "";
+    statsBox.innerHTML = "";
+
+    if (!selectedDate || !history[selectedDate]) {
+      container.innerHTML = "<p style='color:red;'>🔴 Ma'lumot topilmadi.</p>";
+      return;
+    }
+
+    const rows = history[selectedDate].rows || [];
+
+    // Jadval
+    const table = document.createElement("table");
+    const headerRow = document.createElement("tr");
+    columnNames.forEach(name => {
+      const th = document.createElement("th");
+      th.textContent = name;
+      headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
+    rows.forEach(row => {
+      const tr = document.createElement("tr");
+      row.forEach(cell => {
+        const td = document.createElement("td");
+        td.textContent = cell;
+        tr.appendChild(td);
+      });
+      table.appendChild(tr);
+    });
+
+    container.appendChild(table);
+
+    // Statistika
+    let winTotal = 0, lossTotal = 0, winCount = 0, lossCount = 0;
+    rows.forEach(row => {
+      const fact = parseFloat(row[12]);
+      if (!isNaN(fact)) {
+        if (fact > 0) { winTotal += fact; winCount++; }
+        else if (fact < 0) { lossTotal += Math.abs(fact); lossCount++; }
+      }
+    });
+
+    const totalTrades = winCount + lossCount;
+    const winPct = totalTrades ? ((winCount / totalTrades) * 100).toFixed(2) : "0.00";
+    const lossPct = (100 - parseFloat(winPct)).toFixed(2);
+    const avgWin = winCount ? (winTotal / winCount).toFixed(2) : "0.00";
+    const avgLoss = lossCount ? (lossTotal / lossCount).toFixed(2) : "0.00";
+    const pl = (winTotal - lossTotal).toFixed(2);
+
+   statsBox.innerHTML = `
+    <h4 style="text-align:center;">📌 Statistics (${selectedDate})</h4>
+    <div style="display:flex; justify-content:center;">
+      <table border="1" cellpadding="6" style="width:auto; max-width:90%; text-align:center;">
+        <tr>
+          <th>P/L</th>
+          <th>Win $</th>
+          <th>Loss $</th>
+          <th>Win %</th>
+          <th>Loss %</th>
+          <th>Avg Win</th>
+          <th>Avg Loss</th>
+        </tr>
+        <tr>
+          <td>${pl}$</td>
+          <td>${winTotal.toFixed(2)}</td>
+          <td>-${lossTotal.toFixed(2)}</td>
+          <td>${winPct}%</td>
+          <td>${lossPct}%</td>
+          <td>${avgWin}$</td>
+          <td>-${avgLoss}$</td>
+        </tr>
+      </table>
+    </div>
+  `;
+  }
+
+  function clearData() {
+    if (confirm("🗑 Barcha ma'lumotlarni o‘chirishni xohlaysizmi?")) {
+      localStorage.removeItem("history");
+      document.getElementById("daily-table").innerHTML = "";
+      document.getElementById("daily-stats").innerHTML = "";
+      document.getElementById("monthly-report").innerHTML = "";
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", calculateMonthlyReport);
+  document.getElementById("show-btn").addEventListener("click", showSelected);
+  document.getElementById("clear-btn").addEventListener("click", clearData);
+</script>
+
+</body>
+</html>

@@ -620,6 +620,8 @@ import mongoose from "mongoose"; // MongoDB uchun mongoose
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import path from "path";
+import axios from 'axios';
+import { Parser } from 'htmlparser2';
 
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
@@ -629,6 +631,56 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const POLYGON_API_KEY = process.env.POLYGON_API_KEY;
 const MONGODB_URI = process.env.MONGODB_URI; // MongoDB URI
+
+
+let cachedStocks = []; // Har 60 sekundda yangilanadigan ma'lumotlar
+const FINVIZ_URL = "https://elite.finviz.com/screener.ashx?v=141&f=ind_stocksonly,sh_curvol_o100,sh_price_1.5to20,ta_change_30to&ft=4&o=-change&ar=10"
+app.use(express.static('public'));
+
+app.get('/data', (req, res) => {
+  res.json(cachedStocks); // Frontendga saqlangan ma'lumotlar yuboriladi
+});
+
+async function fetchData() {
+  try {
+    const { data: html } = await axios.get(FINVIZ_URL, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0'
+      }
+    });
+
+    let commentData = '';
+    const parser = new Parser({
+      oncomment(data) {
+        if (data.includes('TS') && data.includes('TE')) {
+          commentData = data;
+        }
+      }
+    });
+    parser.write(html);
+    parser.end();
+
+    const stocks = [];
+    const lines = commentData.split('\n');
+    for (const line of lines) {
+      if (line.includes('|')) {
+        const [ticker] = line.trim().split('|');
+        stocks.push({ ticker });
+      }
+    }
+
+    cachedStocks = stocks;
+    console.log(`✅ Cached ${stocks.length} stocks at ${new Date().toLocaleTimeString()}`);
+  } catch (err) {
+    console.error('❌ Error fetching data:', err.message);
+  }
+}
+
+// 🔁 Har 60 sekundda yangilash
+fetchData();
+setInterval(fetchData, 60000); // 60 sekund
+
+
 
 // MongoDB ulanish
 mongoose.connect(MONGODB_URI, {
@@ -665,6 +717,15 @@ app.get("/gap.html", (req, res) => {
   }
   return res.redirect("/"); // login sahifaga qaytaradi
 });
+
+// History sahifasi
+app.get("/history.html", (req, res) => {
+  if (req.session.authenticated) {
+    return res.sendFile(path.join(__dirname, "public", "history.html"));
+  }
+  return res.redirect("/");
+});
+
 
 app.use(express.static(path.join(__dirname, "public")));
 

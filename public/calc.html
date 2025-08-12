@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Risk Manager</title>
+  <style>
+        body {
+            font-family: monospace;
+            background-color: black;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20.5px;
+            padding: 12px;
+        }
+        h2{
+          text-align: left;
+            font-size: 22px;
+        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 4px;
+      text-align: center;
+      font-size: 16px;
+    }
+    input {
+      width: 60px;
+      background-color: black;
+      color: #ffffff;
+      font-size: 15px;
+      border: 1px solid #666;
+      padding: 4px;
+    }
+    .header-grid {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+      
+    }
+    .card1 {
+      font-size: 20px;
+      border: 1px solid #aaa;
+      padding: 10px;
+      min-width: 220px;
+      background: #000;
+    }
+    .card2{
+      font-size: 20px;
+       border: 1px solid #aaa;
+      padding: 10px;
+      min-width: 100px;
+      background: #000;
+    }
+      .card3{
+        font-size: 18px;
+       border: 1px solid #aaa;
+      padding: 10px;
+      min-width: 100px;
+      background: #000;
+    }
+     .card2 div{
+      padding: 10px 0 0 0;
+      font-size: 17px;
+    }
+    .box div{
+      padding: 10px 0 0 0;
+      font-size: 16px;
+    }
+    .box h4 {
+      margin: 4px 0;
+      font-size: 13px;
+    }
+     button{
+       background-color: black;
+    color: white;
+    border: 2px solid white;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    }
+    button:hover {
+    background-color: rgb(255, 255, 255);
+    color: black;
+    border: 2px solid black;
+  }
+  thead th {
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px;
+}
+
+  </style>
+</head>
+<body>
+  <h1>🧮 Risk Manager</h1>
+
+  <div class="header-grid">
+    <div class="card1">
+      <div><strong style="color: red;"> Base RPT: </strong><input id="baseRiskInput" type="number" class="small" step="0.01" value="200"> $</div>
+      <div style="margin-top:8px">Risk Per Trade: <input id="riskPerTrade" type="number" class="nsmall" readonly> $</div>
+      <div>Risk Per Day: <input id="riskPerDay" type="number" class="nsmall" readonly> $</div>
+      <label>Risk Target: <input type="number" id="riskTarget" step="0.01">$</label>
+    </div>
+
+    <div class="card3">
+      <div>Monthly Risk: <input id="monthlyRisk" type="number" class="small" step="1" value="2500">$</div>
+      <div style="margin-top:8px">Monthly P/L: <input id="monthlyPL" type="number" class="nsmall" readonly> $</div>
+    </div>
+
+    <div class="card2">
+      <div>Win $: <span id="winDollar">0</span></div>
+      <div>Loss $: <span id="lossDollar">0</span></div>
+      <div>Win %: <span id="winPercent">0</span></div>
+      <div>Loss %: <span id="lossPercent">0</span></div>
+      <div>Avg Win: <span id="avgWin">0</span></div>
+      <div>Avg Loss: <span id="avgLoss">0</span></div>
+    </div>
+  </div>
+
+  <table id="tradeTable">
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>Trigger</th>
+        <th>Closed P</th>
+        <th>Size</th>
+        <th>50%</th>
+        <th>Stop Price</th>
+        <th>Stop Risk</th>
+        <th>Target-1 Price</th>
+        <th>Target-1 USD</th>
+        <th>Target-0.5 Price</th>
+        <th>Target-0.5 USD</th>
+        <th>Avg Profit</th>
+        <th>Fact</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <!-- one starter row will be added by JS -->
+    </tbody>
+  </table>
+
+  <div class="controls" style="margin-top:12px;">
+    <button id="addRowBtn">➕ Add Row</button>
+    <button id="saveBtn">📤 Save</button>
+    <button id="clearBtn">🧹 Clear (data)</button>
+    <a href="history.html"><button>📊 History</button></a>
+  </div>
+
+<script>
+(function(){// --- keys and elements ---
+  const STATE_KEY = "rm_state";
+  const HISTORY_KEY = "history"; // to be compatible with your history.html
+  const riskTargetEl = document.getElementById("riskTarget");
+  const tableBody = document.getElementById("tableBody");
+  const baseRiskInput = document.getElementById("baseRiskInput");
+  const riskPerTradeEl = document.getElementById("riskPerTrade");
+  const riskPerDayEl = document.getElementById("riskPerDay");
+  const monthlyRiskInput = document.getElementById("monthlyRisk");
+  const monthlyPLEl = document.getElementById("monthlyPL");
+  const winDollarEl = document.getElementById("winDollar");
+  const lossDollarEl = document.getElementById("lossDollar");
+  const winPercentEl = document.getElementById("winPercent");
+  const lossPercentEl = document.getElementById("lossPercent");
+  const avgWinEl = document.getElementById("avgWin");
+  const avgLossEl = document.getElementById("avgLoss");
+  const addRowBtn = document.getElementById("addRowBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const clearBtn = document.getElementById("clearBtn");
+
+  const savedTarget = localStorage.getItem("riskTarget");
+ if (savedTarget !== null) {
+    riskTargetEl.value = savedTarget;
+ }
+ riskTargetEl.addEventListener("input", () => {
+    localStorage.setItem("riskTarget", riskTargetEl.value);
+});
+  // --- state ---
+  let state = {
+    baseRisk: parseFloat(baseRiskInput.value) || 0,
+    monthlyRisk: parseFloat(monthlyRiskInput.value) || 0,
+    carryMonthlyPL: 0,    // persisted P/L for today (carry from previous saves)
+    lastDate: null,
+    rows: []             // saved row snapshots (array of arrays of input values)
+  };
+
+  // helpers
+  const num = v => (v === "" || v === null ||  v === undefined) ? 0 : (isNaN(parseFloat(v)) ? 0 : parseFloat(v));
+  const fmt = v => (v === "" || v === null || v === undefined) ? "" : (Math.round((v + Number.EPSILON) * 100) / 100);
+
+  // create a row DOM and attach listeners
+  function createRow(values){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><input class="ticker" type="text"></td>
+      <td><input class="trigger" type="number"></td>
+      <td><input class="closed" type="number"></td>
+      <td><input class="size" readonly></td>
+      <td><input class="halfSize" readonly></td>
+      <td><input class="stopPrice" readonly></td>
+      <td><input class="stopRisk" readonly></td>
+      <td><input class="target1Price" readonly></td>
+      <td><input class="target1USD" readonly></td>
+      <td><input class="target05Price" readonly></td>
+      <td><input class="target05USD" readonly></td>
+      <td><input class="avgProfit" readonly></td>
+      <td><input class="fact" type="number"></td>
+     
+    `;
+    tableBody.appendChild(tr);
+
+    const inputs = tr.querySelectorAll("input");
+    if (values && values.length) {
+      inputs.forEach((inp,i) => inp.value = values[i] || "");
+    }
+
+    // uppercase ticker
+    const tickEl = tr.querySelector(".ticker");
+    tickEl.addEventListener("input", e => {
+      e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g,"");
+    });
+
+    // recalc on trigger/closed/fact change
+    ["trigger","closed","fact"].forEach(cls => {
+      const el = tr.querySelector("."+cls);
+      el.addEventListener("input", debounce(updateAll, 60));
+    });
+
+    // Enter to add new row
+    tr.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addRow();
+        tableBody.lastElementChild.querySelector("input").focus();
+      }
+    });
+
+    return tr;
+  }
+
+  // debounce helper
+  function debounce(fn, t){
+    let tm;
+    return function(...a){ clearTimeout(tm); tm = setTimeout(()=>fn.apply(this,a), t); };
+  }
+
+  // load saved state
+  function loadState(){
+    const raw = localStorage.getItem(STATE_KEY);
+    const today = (new Date()).toISOString().split('T')[0];
+    if (!raw) {
+      state.lastDate = today;
+      state.baseRisk = num(baseRiskInput.value);
+      state.monthlyRisk = num(monthlyRiskInput.value);
+      state.carryMonthlyPL = 0;
+      saveState();
+    } else {
+      try {
+        const obj = JSON.parse(raw);
+        // merge safe
+        state.baseRisk = num(obj.baseRisk) || num(baseRiskInput.value);
+        state.monthlyRisk = num(obj.monthlyRisk) || num(monthlyRiskInput.value);
+        state.carryMonthlyPL = num(obj.carryMonthlyPL) || 0;
+        state.lastDate = obj.lastDate || today;
+        // if date changed, reset carry (user requirement)
+        if (state.lastDate !== today) {
+          state.carryMonthlyPL = 0;
+          state.lastDate = today;
+        }
+        state.rows = Array.isArray(obj.rows) ? obj.rows : [];
+      } catch(e){
+        console.error("Load parse error", e);
+      }
+    }
+
+    // set UI tops
+    baseRiskInput.value = fmt(state.baseRisk);
+    monthlyRiskInput.value = fmt(state.monthlyRisk);
+
+    // build table rows from state.rows
+    tableBody.innerHTML = "";
+    if (state.rows && state.rows.length) {
+      state.rows.forEach(r => createRow(r));
+    } else {
+      createRow(); // one empty row
+    }
+
+    updateAll(false);
+  }
+
+  // save state snapshot (not history)
+  function saveState(){
+    const rows = [...tableBody.rows].map(r => Array.from(r.querySelectorAll("input")).map(i => i.value));
+    const toSave = {
+      baseRisk: num(baseRiskInput.value),
+      monthlyRisk: num(monthlyRiskInput.value),
+      carryMonthlyPL: state.carryMonthlyPL,
+      lastDate: state.lastDate,
+      rows
+    };
+    localStorage.setItem(STATE_KEY, JSON.stringify(toSave));
+  }
+
+  // main computation
+  function updateAll(save = true){
+    // gather total PL (facts) and win/loss stats
+    let totalPLFromRows = 0;
+    let totalWin = 0, totalLoss = 0, winCount = 0, lossCount = 0;
+
+    [...tableBody.rows].forEach(row => {
+      const fact = num(row.querySelector(".fact").value);
+      if (fact !== 0) {
+        totalPLFromRows += fact;
+        if (fact > 0) { totalWin += fact; winCount++; }
+        else { totalLoss += Math.abs(fact); lossCount++; }
+      }
+    });
+
+    // monthlyPL used in calculations = carry (from previous saves today) + current rows PL
+    const monthlyPLForCalc = state.carryMonthlyPL + totalPLFromRows;
+
+    // effective risk per trade and per day
+    const effectiveRiskPerTrade = +(num(baseRiskInput.value) + monthlyPLForCalc * 0.04).toFixed(2);
+    const effectiveRiskPerDay = +(effectiveRiskPerTrade * 3).toFixed(2);
+
+    // recompute per-row sizing & other columns using effectiveRiskPerTrade
+    [...tableBody.rows].forEach(row => {
+      const trigger = num(row.querySelector(".trigger").value);
+      const closed = num(row.querySelector(".closed").value);
+      const fact = num(row.querySelector(".fact").value);
+
+      const set = (sel, v) => { const el = row.querySelector(sel); if (!el) return; el.value = (v === "" || v === null) ? "" : fmt(v); };
+
+      if (!trigger || trigger <= 0) {
+        // clear computed fields if trigger missing
+        ["size","halfSize","stopPrice","stopRisk","target1Price","target1USD","target05Price","target05USD","avgProfit",].forEach(s => set("."+s,""));
+        return;
+      }
+
+      const stopDist = trigger * 0.37;
+      const size = stopDist > 0 ? Math.floor(effectiveRiskPerTrade / stopDist) : 0;
+      const half = Math.floor(size/2);
+      const stopPrice = +(trigger + stopDist).toFixed(2);
+      const stopRisk = +(stopDist * size).toFixed(2);
+      const target1Price = +(trigger * 0.75).toFixed(2);
+      const target05Price = +(((trigger + target1Price)/2)).toFixed(2);
+      const target1USD = +((trigger - target1Price) * size).toFixed(2);
+      const target05USD = +((trigger - target05Price) * size).toFixed(2);
+      const avgProfit = closed ? +((trigger - closed) * size).toFixed(2) : +(((target1USD + target05USD)/2)).toFixed(2);
+
+      set(".size", size);
+      set(".halfSize", half);
+      set(".stopPrice", stopPrice);
+      set(".stopRisk", stopRisk);
+      set(".target1Price", target1Price);
+      set(".target1USD", target1USD);
+      set(".target05Price", target05Price);
+      set(".target05USD", target05USD);
+      set(".avgProfit", avgProfit);
+
+      // win/loss per row
+      if (fact && fact !== 0) {
+        if (fact > 0) {
+          set(".winDollar", Number(fact).toFixed(2));
+          set(".lossDollar", "");
+        } else {
+          set(".lossDollar", Number(Math.abs(fact)).toFixed(2));
+          set(".winDollar", "");
+        }
+      } else {
+        set(".winDollar", "");
+        set(".lossDollar", "");
+      }
+    });
+
+    // update top summary boxes
+    winDollarEl.textContent = fmt(totalWin);
+    lossDollarEl.textContent = fmt(totalLoss);
+    const totalCount = winCount + lossCount;
+    winPercentEl.textContent = totalCount ? Math.round((winCount/totalCount)*100) : "0";
+    lossPercentEl.textContent = totalCount ? Math.round((lossCount/totalCount)*100) : "0";
+    avgWinEl.textContent = winCount ? fmt(totalWin / winCount) : "0";
+    avgLossEl.textContent = lossCount ? fmt(totalLoss / lossCount) : "0";
+
+    // monthlyPL displayed: show monthlyPLForCalc only if saved state's lastDate == today, else 0
+    const today = (new Date()).toISOString().split('T')[0];
+    const displayMonthlyPL =  monthlyPLForCalc;
+    monthlyPLEl.value = fmt(displayMonthlyPL);
+
+    // set risk displays
+    riskPerTradeEl.value = fmt(effectiveRiskPerTrade);
+    riskPerDayEl.value = fmt(effectiveRiskPerDay);
+
+    // persist current snapshot into state
+    if (save) {
+      const rowsSnapshot = [...tableBody.rows].map(r => Array.from(r.querySelectorAll("input")).map(i => i.value));
+      const toSave = {
+        baseRisk: num(baseRiskInput.value),
+        monthlyRisk: num(monthlyRiskInput.value),
+        carryMonthlyPL: state.carryMonthlyPL,
+        lastDate: state.lastDate,
+        rows: rowsSnapshot
+      };
+      localStorage.setItem(STATE_KEY, JSON.stringify(toSave));
+    }
+  }
+
+  // add row helper
+  function addRow(vals){
+    const r = createRow(vals || []);
+    r.querySelector("input").focus();
+  }
+
+  // baseRisk input change
+  baseRiskInput.addEventListener("input", debounce(() => {
+    state.baseRisk = num(baseRiskInput.value);
+    // save immediate small part
+    const s = JSON.parse(localStorage.getItem(STATE_KEY) || "{}");
+    s.baseRisk = state.baseRisk;
+    localStorage.setItem(STATE_KEY, JSON.stringify(s));
+    updateAll();
+  }, 120));
+
+  // monthlyRisk change
+  monthlyRiskInput.addEventListener("input", debounce(() => {
+    state.monthlyRisk = num(monthlyRiskInput.value);
+    const s = JSON.parse(localStorage.getItem(STATE_KEY) || "{}");
+    s.monthlyRisk = state.monthlyRisk;
+    localStorage.setItem(STATE_KEY, JSON.stringify(s));
+  }, 200));
+
+  // add row button
+  addRowBtn.addEventListener("click", ()=> addRow());
+
+  // save button: push to history and clear table rows but KEEP top stats
+  saveBtn.addEventListener("click", () => {
+    updateAll(false); // compute latest but don't overwrite state.rows yet
+    const rows = [...tableBody.rows].map(r => Array.from(r.querySelectorAll("input")).map(i => i.value));
+    // prepare history object structure expected by your history.html (keyed by date)
+    const historyRaw = localStorage.getItem(HISTORY_KEY);
+    const history = historyRaw ? JSON.parse(historyRaw) : {};
+
+    const today = (new Date()).toISOString().split('T')[0];
+    // convert rows into the full 15-cell format expected by history (we'll pad to match history column indices)
+    const normalizedRows = rows.map(r => {
+      // r array has inputs in order of DOM: ticker, trigger, closed, size, halfSize, stopPrice, stopRisk,
+      // target1Price, target1USD, target05Price, target05USD, avgProfit, fact, winDollar, lossDollar
+      return r; // keep same shape
+    });
+
+    if (!history[today]) history[today] = { rows: [] };
+    // append normalizedRows into history[today].rows
+    history[today].rows.push(...normalizedRows);
+
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+
+    // After save: set carryMonthlyPL to displayed monthlyPL (so same-day continuity)
+    state.lastDate = today;
+    state.carryMonthlyPL = num(monthlyPLEl.value);
+    state.baseRisk = num(baseRiskInput.value);
+    state.monthlyRisk = num(monthlyRiskInput.value);
+
+    // clear current table rows and persist state with empty rows
+    tableBody.innerHTML = "";
+    addRow();
+    saveState();
+    updateAll(false);alert("Ma'lumotlar history ga saqlandi va jadval tozalandi.");
+  });
+
+  // clear without saving (clear data and monthlyPL)
+  clearBtn.addEventListener("click", ()=> {
+    if (!confirm("Jadvalni va Monthly P/L ni tozalamoqchimisiz? (History saqlanadi)")) return;
+    tableBody.innerHTML = "";
+    addRow();
+    // reset carry and monthlyPL
+    state.carryMonthlyPL = 0;
+    state.lastDate = (new Date()).toISOString().split('T')[0];
+    // persist state rows empty
+    const s = JSON.parse(localStorage.getItem(STATE_KEY) || "{}");
+    s.rows = [];
+    s.carryMonthlyPL = 0;
+    s.lastDate = state.lastDate;
+    localStorage.setItem(STATE_KEY, JSON.stringify(s));
+    // also update displayed monthlyPL to 0
+    monthlyPLEl.value = "";
+    updateAll();
+  });
+
+  // before unload save current state
+  window.addEventListener("beforeunload", ()=> {
+    saveState();
+  });
+
+  // initialize
+  loadState();
+
+})();
+</script>
+</body>
+</html>
+     
