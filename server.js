@@ -987,7 +987,7 @@ app.use(
 
 // Statik fayllarni faqat Assets, CSS, JS uchun
 app.use("/asswts", express.static(path.join(__dirname, "public", "asswts")));
-app.use("/js", express.static(path.join(__dirname, "public", "js")));
+app.use("/stock.js", express.static(path.join(__dirname, "public", "stock.js")));
 
 // HTML fayllar sessiya bilan himoyalanadi
 app.get("/gap.html", (req, res) => {
@@ -1004,10 +1004,21 @@ app.get("/history.html", (req, res) => {
   return res.redirect("/");
 });
 
+const protectedPages = ["bk.html", "calc.html", "st.html"];
+protectedPages.forEach((page) => {
+  app.get("/" + page, (req, res) => {
+    if (req.session.authenticated) {
+      return res.sendFile(path.join(__dirname, "public", page));
+    }
+    return res.redirect("/");
+  });
+});
 // Login sahifa ochiq bo‘ladi
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
+
+
 
 // ======== Helper functions ========
 function generateCode() {
