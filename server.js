@@ -985,16 +985,11 @@ app.use(
   })
 );
 
-// Static fayllarni ulash (JS, CSS, rasm)
-app.use(express.static(path.join(__dirname, "public")));
+// Statik fayllarni faqat Assets, CSS, JS uchun
 app.use("/asswts", express.static(path.join(__dirname, "public", "asswts")));
+app.use("/js", express.static(path.join(__dirname, "public", "js")));
 
-// Login sahifa
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// Gap sahifasini faqat sessiya bilan ko‘rsatish
+// HTML fayllar sessiya bilan himoyalanadi
 app.get("/gap.html", (req, res) => {
   if (req.session.authenticated) {
     return res.sendFile(path.join(__dirname, "public", "gap.html"));
@@ -1002,7 +997,6 @@ app.get("/gap.html", (req, res) => {
   return res.redirect("/");
 });
 
-// History sahifasini faqat sessiya bilan ko‘rsatish
 app.get("/history.html", (req, res) => {
   if (req.session.authenticated) {
     return res.sendFile(path.join(__dirname, "public", "history.html"));
@@ -1010,15 +1004,9 @@ app.get("/history.html", (req, res) => {
   return res.redirect("/");
 });
 
-// Boshqa HTML fayllarni ham sessiya bilan himoyalash
-const protectedPages = ["bk.html", "calc.html", "st.html"];
-protectedPages.forEach((page) => {
-  app.get("/" + page, (req, res) => {
-    if (req.session.authenticated) {
-      return res.sendFile(path.join(__dirname, "public", page));
-    }
-    return res.redirect("/");
-  });
+// Login sahifa ochiq bo‘ladi
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // ======== Helper functions ========
