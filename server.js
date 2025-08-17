@@ -917,36 +917,49 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 // ======== FINVIZ scraping cache ========
 let cachedStocks = [];
+
 const FINVIZ_URL =
-  "https://elite.finviz.com/screener.ashx?v=141&f=ind_stocksonly,sh_curvol_o100,sh_price_1.5to20,ta_change_30to&ft=4&o=-change&ar=10";
+  "https://elite.finviz.com/screener.ashx?v=141&f=cap_to0.3,ind_stocksonly,sh_curvol_o50,sh_price_0.5to20,ta_change_u15&ft=4&o=-change&ar=10";
+
+// Sahifa linklari
+const urls = [
+  `${FINVIZ_URL}&r=1`,   // 1-20 ta
+  `${FINVIZ_URL}&r=21` 
+  `${FINVIZ_URL}&r=41`   // 21-40 ta
+];
 
 async function fetchData() {
   try {
-    const { data: html } = await axios.get(FINVIZ_URL, {
-      headers: { "User-Agent": "Mozilla/5.0" },
-    });
+    let allStocks = [];
 
-    let commentData = "";
-    const parser = new Parser({
-      oncomment(data) {
-        if (data.includes("TS") && data.includes("TE")) {
-          commentData = data;
+    for (const url of urls) {
+      const { data: html } = await axios.get(url, {
+        headers: { "User-Agent": "Mozilla/5.0" },
+      });
+
+      let commentData = "";
+      const parser = new Parser({
+        oncomment(data) {
+          if (data.includes("TS") && data.includes("TE")) {
+            commentData = data;
+          }
+        },
+      });
+      parser.write(html);
+      parser.end();
+
+      const lines = commentData.split("\n");
+      for (const line of lines) {
+        if (line.includes("|")) {
+          const [ticker] = line.trim().split("|");
+          allStocks.push({ ticker });
         }
-      },
-    });
-    parser.write(html);
-    parser.end();
-
-    const stocks = [];
-    const lines = commentData.split("\n");
-    for (const line of lines) {
-      if (line.includes("|")) {
-        const [ticker] = line.trim().split("|");
-        stocks.push({ ticker });
       }
     }
-    cachedStocks = stocks;
-    console.log(`✅ Cached ${stocks.length} stocks at ${new Date().toLocaleTimeString()}`);
+
+    cachedStocks = allStocks;
+    console.log(`✅ Cached ${allStocks.length} stocks at ${new Date().toLocaleTimeString()}`);
+
   } catch (err) {
     console.error("❌ Error fetching data:", err.message);
   }
