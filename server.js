@@ -923,9 +923,9 @@ const FINVIZ_URL =
 
 // Sahifa linklari
 const urls = [
-  `${FINVIZ_URL}&r=1`,   // 1-20 ta
-  `${FINVIZ_URL}&r=21` 
-  `${FINVIZ_URL}&r=41`   // 21-40 ta
+  `${FINVIZ_URL}&r=1`, 
+  `${FINVIZ_URL}&r=21`,
+  `${FINVIZ_URL}&r=41`, 
 ];
 
 async function fetchData() {
