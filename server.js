@@ -919,8 +919,7 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 let cachedStocks = []; // Har 60 sekundda yangilanadigan ma'lumotlar
 const FINVIZ_URL = "https://elite.finviz.com/screener.ashx?v=141&f=cap_to0.3,ind_stocksonly,sh_curvol_o50,sh_price_0.5to20,ta_change_u15&ft=3&o=-change&ar=50"
-app.use(express.static('public'));
-
+// ❌ agar buni qo‘ygan bo‘lsang, u hamma HTML fayllarni ochib yuboradi
 app.get('/data', (req, res) => {
   res.json(cachedStocks); // Frontendga saqlangan ma'lumotlar yuboriladi
 });
